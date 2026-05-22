@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/common/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="dz001.md" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/KeyValueStore.Application/KeyValueStore.Application.csproj" Id="d814118b-37b3-41fa-8ffd-f20b8b0f14dd" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/KeyValueStore.Application.Tests/KeyValueStore.Application.Tests.csproj" Id="27c31f58-883e-4d1f-8307-be397019cfd0" />
+  </Folder>
+</Solution>
