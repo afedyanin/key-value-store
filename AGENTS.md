@@ -5,7 +5,7 @@ Instructions for AI coding agents.
 ### Technology Stack
 * .NET 10.0
 * C# 14
-* Test framework: **NUnit 4.x** with NUnit3TestAdapter. No inline `[SetUp]` overrides — use constructor or `[OneTimeSetUp]`.
+* Test framework: **xUnit**
 * Multi-platform support (Windows, Linux, macOS, containers)
 
 ## General
