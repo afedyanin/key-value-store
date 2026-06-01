@@ -97,8 +97,6 @@ public sealed class TcpServer : IDisposable
                 var text = Encoding.UTF8.GetString(receiveBuffer.AsSpan(0, bytesRead));
                 lineBuffer.Append(text);
 
-                Console.WriteLine($"Client message received: {text}");
-
                 while (lineBuffer.Length > 0)
                 {
                     var span = lineBuffer.ToString().AsSpan();
@@ -118,6 +116,8 @@ public sealed class TcpServer : IDisposable
                     {
                         continue;
                     }
+
+                    // Console.WriteLine($"Line received: {line}");
 
                     var parsed = CommandParser.Parse(line.AsSpan());
 

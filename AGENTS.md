@@ -63,6 +63,7 @@ Instructions for AI coding agents.
 ### Directory Structure
 - **`/src`**: Main source code for all Aspire packages
   - `KeyValueStore.Application/`: Core Domain Model and Services
+  - `KeyValueStore.Host/`: Console Host
 - **`/tests`**: Comprehensive test suites mirroring src structure
 - **`/docs`**: Documentation including contributing guides and area ownership
 
