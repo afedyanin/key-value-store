@@ -18,3 +18,8 @@
 ## Результаты
 
 - реализация простого протокола обработки данных на основе PipeReader и PipeWriter, разделяющего ввод-вывод и логику обработки.
+
+## Links
+
+- https://gitlab.com/aa.gerasimenko/otus.pipeline.git
+

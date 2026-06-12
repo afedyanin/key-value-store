@@ -18,3 +18,7 @@
 
 - простой конвейер обработки данных на TPL Dataflow, связывающий несколько блоков.
 
+## Links
+
+- https://hub.mos.ru/simple-developing/otus-csharp/tpldataflow
+- https://github.com/lents/TPLDataflow

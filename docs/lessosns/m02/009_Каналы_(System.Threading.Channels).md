@@ -17,3 +17,8 @@
 ## Результаты
 
 - реализация паттерна "Производитель-потребитель" с помощью System.Threading.Channels.Channel<T>.
+
+## Links
+
+- https://github.com/Dzitskiy/Channels
+
