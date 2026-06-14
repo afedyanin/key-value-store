@@ -82,7 +82,6 @@ Instructions for AI coding agents.
 The following specialized skills are available in `agents/skills/`:
 
 - **modern-csharp**: Modern C# language features for .NET 10 and C# 14.
-- **clean-architecture**: Clean Architecture for .NET applications.
 - **configuration**: Configuration patterns for .NET 10 applications.
 - **convention-learner**: Detects and enforces project-specific coding conventions by analyzing existing codebase patterns.
 
