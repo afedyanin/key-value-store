@@ -4,9 +4,18 @@
     <File Path="Directory.Build.props" />
     <File Path="README.md" />
   </Folder>
-  <Folder Name="/docs/">
-    <File Path="docs/dz001.md" />
-    <File Path="docs/dz002.md" />
+  <Folder Name="/docs/" />
+  <Folder Name="/docs/dz/">
+    <File Path="docs/dz/dz001.md" />
+    <File Path="docs/dz/dz002.md" />
+    <File Path="docs/dz/dz003.md" />
+    <File Path="docs/dz/dz004.md" />
+    <File Path="docs/dz/dz005.md" />
+    <File Path="docs/dz/dz006.md" />
+    <File Path="docs/dz/dz007.md" />
+    <File Path="docs/dz/dz008.md" />
+    <File Path="docs/dz/dz009.md" />
+    <File Path="docs/dz/dz_schedule.md" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/KeyValueStore.Application/KeyValueStore.Application.csproj" Id="d814118b-37b3-41fa-8ffd-f20b8b0f14dd" />

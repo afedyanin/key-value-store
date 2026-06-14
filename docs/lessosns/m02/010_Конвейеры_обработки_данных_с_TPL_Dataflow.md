@@ -1,0 +1,24 @@
+# Конвейеры обработки данных с TPL Dataflow
+
+## Цели занятия
+
+- проектировать и реализовывать сложные конвейеры обработки данных (ETL, workflow);
+- выбирать подходящие блоки TPL Dataflow для решения конкретной задачи (трансформация, буферизация, агрегация);
+- управлять степенью параллелизма и противодавлением (back-pressure) в асинхронных потоках данных.
+
+## Краткое содержание
+
+- библиотека System.Threading.Tasks.Dataflow;
+- основные блоки: ActionBlock<T>, TransformBlock<TIn, TOut>, BufferBlock<T>
+- вязывание блоков в конвейер (LinkTo);
+- настройка параллелизма: ExecutionDataflowBlockOptions и MaxDegreeOfParallelism;
+- концепции: потоки данных (dataflow), агенты, асинхронная обработка.
+
+## Результаты
+
+- простой конвейер обработки данных на TPL Dataflow, связывающий несколько блоков.
+
+## Links
+
+- https://hub.mos.ru/simple-developing/otus-csharp/tpldataflow
+- https://github.com/lents/TPLDataflow
