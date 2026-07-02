@@ -17,3 +17,8 @@
 
 - бенчмарк, созданный с помощью BenchmarkDotNet, и файл трассировки приложения, полученный с помощью dotnet-trace.
 
+- https://learn.microsoft.com/en-us/visualstudio/profiling/flame-graph?view=visualstudio
+- https://github.com/microsoft/perfview
+- https://www.speedscope.app/
+
+

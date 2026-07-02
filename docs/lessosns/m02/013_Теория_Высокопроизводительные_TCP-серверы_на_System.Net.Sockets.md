@@ -17,3 +17,7 @@
 ## Результаты
 
 - конспект лекции
+
+- https://gitlab.com/aa.gerasimenko/otus.dotnet.sockets
+- https://www.mind-archipelago.com/2025/08/27/socketasynceventargs-guide.html
+
