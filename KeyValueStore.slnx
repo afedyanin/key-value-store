@@ -4,7 +4,8 @@
     <File Path="Directory.Build.props" />
     <File Path="README.md" />
   </Folder>
-  <Folder Name="/docs/" />
+  <Folder Name="/docs/">
+  </Folder>
   <Folder Name="/docs/dz/">
     <File Path="docs/dz/dz001.md" />
     <File Path="docs/dz/dz002.md" />
