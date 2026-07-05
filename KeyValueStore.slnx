@@ -4,7 +4,11 @@
     <File Path="Directory.Build.props" />
     <File Path="README.md" />
   </Folder>
-  <Folder Name="/docs/" />
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/KeyValueStore.Benchmarks/KeyValueStore.Benchmarks.csproj" Id="b7f9a3c1-d4e2-4f5a-8b6c-1e2d3a4f5b6c" />
+  </Folder>
+  <Folder Name="/docs/">
+  </Folder>
   <Folder Name="/docs/dz/">
     <File Path="docs/dz/dz001.md" />
     <File Path="docs/dz/dz002.md" />
