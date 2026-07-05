@@ -18,13 +18,6 @@ public sealed class TcpBenchmarkClient : IDisposable
         _port = port;
     }
 
-    private TcpBenchmarkClient(Socket socket, NetworkStream stream)
-    {
-        _socket = socket;
-        _stream = stream;
-        _reader = new StreamReader(stream, Encoding.UTF8, leaveOpen: true);
-    }
-
     public async Task ConnectAsync()
     {
         _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -36,6 +29,16 @@ public sealed class TcpBenchmarkClient : IDisposable
     public async Task<string> SetAsync(string key, string value)
     {
         var command = $"SET {key} {value}\n";
+        var bytes = Encoding.UTF8.GetBytes(command);
+        await _stream!.WriteAsync(bytes.AsMemory()).ConfigureAwait(false);
+        await _stream!.FlushAsync().ConfigureAwait(false);
+        return await ReadResponseAsync().ConfigureAwait(false);
+    }
+
+    public async Task<string> SetAsync(string key, byte[] value)
+    {
+        var valueStr = Encoding.UTF8.GetString(value);
+        var command = $"SET {key} {valueStr}\n";
         var bytes = Encoding.UTF8.GetBytes(command);
         await _stream!.WriteAsync(bytes.AsMemory()).ConfigureAwait(false);
         await _stream!.FlushAsync().ConfigureAwait(false);

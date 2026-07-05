@@ -1,14 +1,14 @@
-using NBomber.CSharp;
 using KeyValueStore.Benchmarks;
+using NBomber.CSharp;
 
 var benchmarkHost = "127.0.0.1";
 var benchmarkPort = 8080;
 
 var scenario = Scenario.Create(
         "key_value_benchmark",
-        () => Step.Create(
-            "benchmark_step",
-            async (_, _) =>
+        async context =>
+        {
+            try
             {
                 using var client = new TcpBenchmarkClient(benchmarkHost, benchmarkPort);
                 await client.ConnectAsync();
@@ -19,21 +19,27 @@ var scenario = Scenario.Create(
                 var setResult = await client.SetAsync(key, value);
                 if (setResult != "OK")
                 {
-                    return Response.Fail<object>(null, $"SET returned '{setResult}' instead of 'OK'");
+                    return Response.Fail(message: $"SET returned '{setResult}' instead of 'OK'", statusCode: "500");
                 }
 
                 var getResult = await client.GetAsync(key);
                 if (getResult is null)
                 {
-                    return Response.Fail<object>(null, "GET returned null");
+                    return Response.Fail(message: "GET returned null", statusCode: "500");
                 }
 
                 return Response.Ok();
-            }))
+            }
+            catch (Exception ex)
+            {
+                return Response.Fail(message: ex.Message, statusCode: "500");
+            }
+        })
     .WithWarmUpDuration(TimeSpan.FromSeconds(5))
-    .WithLoad(Simulation.Inject(100, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1)))
-    .WithDuration(TimeSpan.FromSeconds(30));
+    .WithLoadSimulations(
+        Simulation.Inject(
+            rate: 1000,
+            interval: TimeSpan.FromSeconds(1),
+            during: TimeSpan.FromSeconds(30)));
 
-await NBomberRunner.RegisterScenarios(scenario)
-    .WithReportOptions(reportInterval: TimeSpan.FromSeconds(5))
-    .RunAsync();
+_ = NBomberRunner.RegisterScenarios(scenario).Run();

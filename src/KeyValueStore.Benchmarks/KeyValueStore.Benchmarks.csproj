@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\KeyValueStore.Application\KeyValueStore.Application.csproj" />
+    <ProjectReference Include="..\KeyValueStore.Application\KeyValueStore.Application.csproj" />
   </ItemGroup>
 
 </Project>
