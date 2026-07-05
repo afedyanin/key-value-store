@@ -90,8 +90,9 @@ public sealed class TcpServer : IDisposable
                 {
                     bytesRead = await clientSocket.ReceiveAsync(receiveBuffer.AsMemory(), SocketFlags.None).ConfigureAwait(false);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Console.WriteLine($"Error: {ex.Message}");
                     break;
                 }
 
@@ -102,6 +103,7 @@ public sealed class TcpServer : IDisposable
                 }
 
                 var text = Encoding.UTF8.GetString(receiveBuffer.AsSpan(0, bytesRead));
+                lineBuffer.Clear();
                 lineBuffer.Append(text);
 
                 while (lineBuffer.Length > 0)
@@ -124,7 +126,7 @@ public sealed class TcpServer : IDisposable
                         continue;
                     }
 
-                    // Console.WriteLine($"Line received: {line}");
+                    //Console.WriteLine($"Line received: {line}");
 
                     var parsed = CommandParser.Parse(line.AsSpan());
 
@@ -133,9 +135,9 @@ public sealed class TcpServer : IDisposable
                         continue;
                     }
 
-                    Console.WriteLine($"  Command: {parsed.Command}");
-                    Console.WriteLine($"  Key:     {parsed.Key}");
-                    Console.WriteLine($"  Value:   {parsed.Value}");
+                    //Console.WriteLine($"  Command: {parsed.Command}");
+                    //Console.WriteLine($"  Key:     {parsed.Key}");
+                    //Console.WriteLine($"  Value:   {parsed.Value}");
 
                     var response = parsed.Command switch
                     {
@@ -151,9 +153,9 @@ public sealed class TcpServer : IDisposable
                         {
                             await clientSocket.SendAsync(response, SocketFlags.None).ConfigureAwait(false);
                         }
-                        catch
+                        catch (Exception ex)
                         {
-                            // Client may have disconnected
+                            Console.WriteLine($"Error: {ex.Message}");
                             break;
                         }
                     }
@@ -168,9 +170,9 @@ public sealed class TcpServer : IDisposable
             {
                 clientSocket.Shutdown(SocketShutdown.Both);
             }
-            catch
+            catch (Exception ex)
             {
-                // Socket may already be closed
+                Console.WriteLine($"Error: {ex.Message}");
             }
 
             clientSocket.Close();
@@ -180,7 +182,8 @@ public sealed class TcpServer : IDisposable
     private byte[]? HandleSet(ParsedCommand parsed)
     {
         var key = parsed.Key.ToString();
-        var value = Encoding.UTF8.GetBytes(parsed.Value.ToString());
+        var stringValue = $"{parsed.Value.ToString().TrimEnd('\r', '\n')}\r\n";
+        var value = Encoding.UTF8.GetBytes(stringValue);
         _store.Set(key, value);
         return Encoding.UTF8.GetBytes("OK\r\n");
     }

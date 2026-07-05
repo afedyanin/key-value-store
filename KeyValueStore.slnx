@@ -20,6 +20,7 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/KeyValueStore.Application/KeyValueStore.Application.csproj" Id="d814118b-37b3-41fa-8ffd-f20b8b0f14dd" />
+    <Project Path="src/KeyValueStore.Benchmarks/KeyValueStore.Benchmarks.csproj" />
     <Project Path="src/KeyValueStore.Host/KeyValueStore.Host.csproj" Id="2eeb0d08-2391-4992-a7d7-439edb13b193" />
   </Folder>
   <Folder Name="/tests/">
