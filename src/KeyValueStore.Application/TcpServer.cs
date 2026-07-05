@@ -2,14 +2,21 @@ using System.Buffers;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using KeyValueStore.Application.Abstractions;
 
 namespace KeyValueStore.Application;
 
 public sealed class TcpServer : IDisposable
 {
+    private readonly IKeyValueStore _store;
     private Socket? _serverSocket;
     private CancellationTokenSource? _cancellationTokenSource;
     private bool _isRunning;
+
+    public TcpServer(IKeyValueStore store)
+    {
+        _store = store;
+    }
 
     public async Task StartAsync(int port = 8080, CancellationToken cancellationToken = default)
     {
@@ -129,6 +136,27 @@ public sealed class TcpServer : IDisposable
                     Console.WriteLine($"  Command: {parsed.Command}");
                     Console.WriteLine($"  Key:     {parsed.Key}");
                     Console.WriteLine($"  Value:   {parsed.Value}");
+
+                    var response = parsed.Command switch
+                    {
+                        "SET" => HandleSet(parsed),
+                        "GET" => HandleGet(parsed),
+                        "DELETE" => HandleDelete(parsed),
+                        _ => Encoding.UTF8.GetBytes("-ERR Unknown command\r\n")
+                    };
+
+                    if (response != null)
+                    {
+                        try
+                        {
+                            await clientSocket.SendAsync(response, SocketFlags.None).ConfigureAwait(false);
+                        }
+                        catch
+                        {
+                            // Client may have disconnected
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -147,6 +175,28 @@ public sealed class TcpServer : IDisposable
 
             clientSocket.Close();
         }
+    }
+
+    private byte[]? HandleSet(ParsedCommand parsed)
+    {
+        var key = parsed.Key.ToString();
+        var value = Encoding.UTF8.GetBytes(parsed.Value.ToString());
+        _store.Set(key, value);
+        return Encoding.UTF8.GetBytes("OK\r\n");
+    }
+
+    private byte[]? HandleGet(ParsedCommand parsed)
+    {
+        var key = parsed.Key.ToString();
+        var value = _store.Get(key);
+        return value is not null ? value : Encoding.UTF8.GetBytes("(nil)\r\n");
+    }
+
+    private byte[]? HandleDelete(ParsedCommand parsed)
+    {
+        var key = parsed.Key.ToString();
+        _store.Delete(key);
+        return Encoding.UTF8.GetBytes("OK\r\n");
     }
 
     public void Dispose()

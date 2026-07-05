@@ -6,7 +6,8 @@ public static class Program
 {
     public static async Task Main(string[] args)
     {
-        var server = new TcpServer();
+        using var store = new SimpleStore();
+        var server = new TcpServer(store);
 
         Console.CancelKeyPress += (_, e) =>
         {

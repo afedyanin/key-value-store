@@ -9,7 +9,7 @@ public class TcpServerTests
     [Fact]
     public async Task StartAsync_And_StopAsync_DoesNotThrow()
     {
-        var server = new TcpServer();
+        var server = new TcpServer(new SimpleStore());
         var port = GetRandomPort();
 
         var task = server.StartAsync(port);
@@ -29,7 +29,7 @@ public class TcpServerTests
     [Fact]
     public async Task Client_Can_Connect_And_Send_Data()
     {
-        var server = new TcpServer();
+        var server = new TcpServer(new SimpleStore());
         var port = GetRandomPort();
 
         var task = server.StartAsync(port);
@@ -60,7 +60,7 @@ public class TcpServerTests
     [Fact]
     public async Task Client_Disconnect_Correctly_Handled()
     {
-        var server = new TcpServer();
+        var server = new TcpServer(new SimpleStore());
         var port = GetRandomPort();
 
         var task = server.StartAsync(port);
@@ -86,7 +86,7 @@ public class TcpServerTests
     [Fact]
     public async Task Multiple_Clients_Can_Connect()
     {
-        var server = new TcpServer();
+        var server = new TcpServer(new SimpleStore());
         var port = GetRandomPort();
 
         var task = server.StartAsync(port);
