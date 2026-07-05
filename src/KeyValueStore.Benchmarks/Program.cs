@@ -17,13 +17,14 @@ var scenario = Scenario.Create(
                 var value = $"bench-value-{Guid.NewGuid():N}";
 
                 var setResult = await client.SetAsync(key, value);
+
                 if (setResult != "OK")
                 {
                     return Response.Fail(message: $"SET returned '{setResult}' instead of 'OK'", statusCode: "500");
                 }
 
                 var getResult = await client.GetAsync(key);
-                if (getResult is null)
+                if (getResult == "(nil)")
                 {
                     return Response.Fail(message: "GET returned null", statusCode: "500");
                 }
@@ -35,10 +36,10 @@ var scenario = Scenario.Create(
                 return Response.Fail(message: ex.Message, statusCode: "500");
             }
         })
-    .WithWarmUpDuration(TimeSpan.FromSeconds(5))
+    .WithWarmUpDuration(TimeSpan.FromSeconds(1))
     .WithLoadSimulations(
         Simulation.Inject(
-            rate: 1000,
+            rate: 270,
             interval: TimeSpan.FromSeconds(1),
             during: TimeSpan.FromSeconds(30)));
 

@@ -434,4 +434,3 @@ Desktop.ini
 .DS_Store
 src/Vertr.TinvestGateway.Host/appsettings.Development.json
 src/Vertr.TinvestGateway.Host/appsettings.Docker.json
-src/KeyValueStore.Benchmarks/reports/
