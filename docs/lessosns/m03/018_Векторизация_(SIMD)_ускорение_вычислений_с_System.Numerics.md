@@ -16,3 +16,10 @@
 ## Результаты
 
 - код, использующий Vector<T> для ускорения вычислений, и сравнительный анализ производительности.
+
+## Links
+
+https://docs.google.com/presentation/d/1I0-SiHid1hTsv7tjLST2dYW5YF5AJVfs9l4Rg9rvz48/edit?slide=id.p#slide=id.p
+
+https://github.com/zyl910/VectorTraits.Sample.Benchmarks/blob/main/VectorTraits.Sample.Benchmarks.Inc/Image/Bgr24ToGray8Benchmark.cs
+

@@ -17,3 +17,9 @@
 
 - скомпилированные артефакты приложения в режимах ReadyToRun и NativeAOT и сравнительный анализ их размера и скорости запуска.
 
+## Links
+
+- https://github.com/lents/JITAOTDemo
+- https://benchmarksgame-team.pages.debian.net/benchmarksgame/fastest/csharpcore-go.html
+
+
