@@ -1,3 +1,5 @@
+using System.Text.Json;
+using KeyValueStore.Application;
 using KeyValueStore.Benchmarks;
 using NBomber.CSharp;
 
@@ -14,9 +16,14 @@ var scenario = Scenario.Create(
                 await client.ConnectAsync();
 
                 var key = $"bench-key-{Guid.NewGuid():N}";
-                var value = $"bench-value-{Guid.NewGuid():N}";
+                var profile = new UserProfile
+                {
+                    Id = Random.Shared.Next(),
+                    Username = $"user-{Guid.NewGuid():N}",
+                    CreatedAt = DateTime.UtcNow
+                };
 
-                var setResult = await client.SetAsync(key, value);
+                var setResult = await client.SetProfileAsync(key, profile);
 
                 if (setResult != "OK")
                 {
@@ -27,6 +34,12 @@ var scenario = Scenario.Create(
                 if (getResult == "(nil)")
                 {
                     return Response.Fail(message: "GET returned null", statusCode: "500");
+                }
+
+                var retrieved = JsonSerializer.Deserialize<UserProfile>(getResult!);
+                if (retrieved == null || retrieved.Id != profile.Id)
+                {
+                    return Response.Fail(message: "Retrieved profile does not match", statusCode: "500");
                 }
 
                 return Response.Ok();

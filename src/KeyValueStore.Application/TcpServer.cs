@@ -2,6 +2,7 @@ using System.Buffers;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using KeyValueStore.Application.Abstractions;
 
 namespace KeyValueStore.Application;
@@ -182,17 +183,26 @@ public sealed class TcpServer : IDisposable
     private byte[]? HandleSet(ParsedCommand parsed)
     {
         var key = parsed.Key.ToString();
-        var stringValue = $"{parsed.Value.ToString().TrimEnd('\r', '\n')}\r\n";
-        var value = Encoding.UTF8.GetBytes(stringValue);
-        _store.Set(key, value);
+        var valueSpan = parsed.Value.TrimEnd(['\r', '\n']);
+        var profile = JsonSerializer.Deserialize<UserProfile>(valueSpan);
+
+        if (profile == null)
+        {
+            return Encoding.UTF8.GetBytes("-ERR Failed to deserialize profile\r\n");
+        }
+
+        _store.Set(key, profile);
         return Encoding.UTF8.GetBytes("OK\r\n");
     }
 
     private byte[]? HandleGet(ParsedCommand parsed)
     {
         var key = parsed.Key.ToString();
-        var value = _store.Get(key);
-        return value is not null ? value : Encoding.UTF8.GetBytes("(nil)\r\n");
+        var profile = _store.Get(key);
+
+        return profile is not null
+            ? Encoding.UTF8.GetBytes(JsonSerializer.Serialize(profile) + "\r\n")
+            : Encoding.UTF8.GetBytes("(nil)\r\n");
     }
 
     private byte[]? HandleDelete(ParsedCommand parsed)

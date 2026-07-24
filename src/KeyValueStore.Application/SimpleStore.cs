@@ -1,4 +1,5 @@
-﻿using KeyValueStore.Application.Abstractions;
+﻿using System.Text.Json;
+using KeyValueStore.Application.Abstractions;
 
 namespace KeyValueStore.Application;
 
@@ -11,13 +12,18 @@ public sealed class SimpleStore : IKeyValueStore, IDisposable
     private long _getCount;
     private long _deleteCount;
 
-    public byte[]? Get(string key)
+    public UserProfile? Get(string key)
     {
         _lock.EnterReadLock();
         try
         {
             Interlocked.Increment(ref _getCount);
-            return _store.TryGetValue(key, out var item) ? item : null;
+            if (_store.TryGetValue(key, out var bytes))
+            {
+                return JsonSerializer.Deserialize<UserProfile>(bytes);
+            }
+
+            return null;
         }
         finally
         {
@@ -25,13 +31,15 @@ public sealed class SimpleStore : IKeyValueStore, IDisposable
         }
     }
 
-    public void Set(string key, byte[] value)
+    public void Set(string key, UserProfile profile)
     {
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(profile);
+
         _lock.EnterWriteLock();
         try
         {
             Interlocked.Increment(ref _setCount);
-            _store[key] = value;
+            _store[key] = bytes;
         }
         finally
         {
