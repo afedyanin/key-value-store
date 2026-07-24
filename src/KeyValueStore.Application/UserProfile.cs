@@ -1,6 +1,7 @@
 namespace KeyValueStore.Application;
 
-public sealed class UserProfile
+[GenerateBinarySerializer]
+public sealed partial class UserProfile
 {
     public int Id { get; set; }
     public string Username { get; set; } = "";

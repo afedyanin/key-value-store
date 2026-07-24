@@ -42,7 +42,7 @@ public sealed class TcpServer : IDisposable
             while (!token.IsCancellationRequested && _isRunning)
             {
                 var clientSocket = await _serverSocket.AcceptAsync(token).ConfigureAwait(false);
-                _ = ProcessClientAsync(clientSocket);
+                _ = ProcessClientAsync(clientSocket, cancellationToken);
             }
         }
         catch (OperationCanceledException)
@@ -75,7 +75,7 @@ public sealed class TcpServer : IDisposable
         }
     }
 
-    private async Task ProcessClientAsync(Socket clientSocket)
+    private async Task ProcessClientAsync(Socket clientSocket, CancellationToken cancellationToken = default)
     {
         var lineBuffer = new StringBuilder();
         var receiveBuffer = ArrayPool<byte>.Shared.Rent(4096);
@@ -89,7 +89,7 @@ public sealed class TcpServer : IDisposable
                 int bytesRead;
                 try
                 {
-                    bytesRead = await clientSocket.ReceiveAsync(receiveBuffer.AsMemory(), SocketFlags.None).ConfigureAwait(false);
+                    bytesRead = await clientSocket.ReceiveAsync(receiveBuffer.AsMemory(), SocketFlags.None, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

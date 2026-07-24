@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using KeyValueStore.Application.Abstractions;
+﻿using KeyValueStore.Application.Abstractions;
 
 namespace KeyValueStore.Application;
 
@@ -20,7 +19,8 @@ public sealed class SimpleStore : IKeyValueStore, IDisposable
             Interlocked.Increment(ref _getCount);
             if (_store.TryGetValue(key, out var bytes))
             {
-                return JsonSerializer.Deserialize<UserProfile>(bytes);
+                using var stream = new MemoryStream(bytes);
+                return UserProfile.DeserializeFromBinary(stream);
             }
 
             return null;
@@ -33,7 +33,9 @@ public sealed class SimpleStore : IKeyValueStore, IDisposable
 
     public void Set(string key, UserProfile profile)
     {
-        var bytes = JsonSerializer.SerializeToUtf8Bytes(profile);
+        using var stream = new MemoryStream();
+        profile.SerializeToBinary(stream);
+        var bytes = stream.ToArray();
 
         _lock.EnterWriteLock();
         try
