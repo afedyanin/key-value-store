@@ -41,7 +41,7 @@ public class TcpServerTests
             using var client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             await client.ConnectAsync(new IPEndPoint(IPAddress.Loopback, port));
 
-            var profile = new KeyValueStore.Application.UserProfile
+            var profile = new UserProfile
             {
                 Id = 1,
                 Username = "testuser",
@@ -79,7 +79,7 @@ public class TcpServerTests
             using var client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             await client.ConnectAsync(new IPEndPoint(IPAddress.Loopback, port));
 
-            var profile = new KeyValueStore.Application.UserProfile
+            var profile = new UserProfile
             {
                 Id = 42,
                 Username = "alice",
