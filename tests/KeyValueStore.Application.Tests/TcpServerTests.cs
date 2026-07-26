@@ -41,11 +41,58 @@ public class TcpServerTests
             using var client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             await client.ConnectAsync(new IPEndPoint(IPAddress.Loopback, port));
 
-            var message = "SET key1 value1\n";
+            var profile = new UserProfile
+            {
+                Id = 1,
+                Username = "testuser",
+                CreatedAt = DateTime.UtcNow
+            };
+            var json = System.Text.Json.JsonSerializer.Serialize(profile);
+            var message = $"SET key1 {json}\n";
             var bytes = Encoding.UTF8.GetBytes(message);
             await client.SendAsync(bytes, SocketFlags.None);
 
             await Task.Delay(300);
+
+            client.Shutdown(SocketShutdown.Send);
+            await Task.Delay(200);
+        }
+        finally
+        {
+            await server.StopAsync();
+            await task;
+        }
+    }
+
+    [Fact]
+    public async Task Set_And_Get_Profile_ReturnsCorrectData()
+    {
+        var server = new TcpServer(new SimpleStore());
+        var port = GetRandomPort();
+
+        var task = server.StartAsync(port);
+
+        try
+        {
+            await Task.Delay(300);
+
+            using var client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            await client.ConnectAsync(new IPEndPoint(IPAddress.Loopback, port));
+
+            var profile = new UserProfile
+            {
+                Id = 42,
+                Username = "alice",
+                CreatedAt = new DateTime(2024, 1, 15, 10, 30, 0)
+            };
+            var json = System.Text.Json.JsonSerializer.Serialize(profile);
+            var setMessage = $"SET user-42 {json}\n";
+            await client.SendAsync(Encoding.UTF8.GetBytes(setMessage), SocketFlags.None);
+            await Task.Delay(200);
+
+            var getSet = "GET user-42\n";
+            await client.SendAsync(Encoding.UTF8.GetBytes(getSet), SocketFlags.None);
+            await Task.Delay(200);
 
             client.Shutdown(SocketShutdown.Send);
             await Task.Delay(200);

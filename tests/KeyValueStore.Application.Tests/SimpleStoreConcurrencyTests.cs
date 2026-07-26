@@ -19,8 +19,13 @@ public class SimpleStoreConcurrencyTests
                 for (var j = 0; j < opsPerThread; j++)
                 {
                     var key = $"key-{index}-{j}";
-                    var value = BitConverter.GetBytes(index * opsPerThread + j);
-                    store.Set(key, value);
+                    var profile = new UserProfile
+                    {
+                        Id = index * opsPerThread + j,
+                        Username = $"user-{index}-{j}",
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    store.Set(key, profile);
                     await Task.Yield();
                 }
             }));
@@ -40,10 +45,10 @@ public class SimpleStoreConcurrencyTests
             for (var j = 0; j < opsPerThread; j++)
             {
                 var key = $"key-{i}-{j}";
-                var expected = BitConverter.GetBytes(i * opsPerThread + j);
-                var actual = store.Get(key);
-                Assert.NotNull(actual);
-                Assert.Equal(expected, actual);
+                var profile = store.Get(key);
+                Assert.NotNull(profile);
+                Assert.Equal(i * opsPerThread + j, profile.Id);
+                Assert.Equal($"user-{i}-{j}", profile.Username);
             }
         }
     }
@@ -53,12 +58,16 @@ public class SimpleStoreConcurrencyTests
     {
         using var store = new SimpleStore();
         const int numKeys = 100;
-        const int numReaders = 5;
 
         // Записываем данные
         for (var j = 0; j < numKeys; j++)
         {
-            store.Set($"data-{j}", BitConverter.GetBytes(j));
+            store.Set($"data-{j}", new UserProfile
+            {
+                Id = j,
+                Username = $"user-{j}",
+                CreatedAt = DateTime.UtcNow
+            });
         }
 
         // Проверяем статистику после записи
@@ -71,16 +80,17 @@ public class SimpleStoreConcurrencyTests
         var readCount = 0L;
 
         var readTasks = new List<Task>();
-        for (var i = 0; i < numReaders; i++)
+        for (var i = 0; i < 5; i++)
         {
             readTasks.Add(Task.Run(async () =>
             {
                 for (var j = 0; j < numKeys; j++)
                 {
                     var key = $"data-{j}";
-                    var value = store.Get(key);
-                    Assert.NotNull(value);
-                    Assert.Equal(BitConverter.GetBytes(j), value);
+                    var profile = store.Get(key);
+                    Assert.NotNull(profile);
+                    Assert.Equal(j, profile.Id);
+                    Assert.Equal($"user-{j}", profile.Username);
 
                     Interlocked.Increment(ref readCount);
 
@@ -94,11 +104,11 @@ public class SimpleStoreConcurrencyTests
         // Проверяем статистику после чтения
         (setCount, getCount, deleteCount) = store.GetStatistics();
         Assert.Equal(numKeys, setCount);
-        Assert.Equal(numReaders * numKeys, getCount);
+        Assert.Equal(5 * numKeys, getCount);
         Assert.Equal(0L, deleteCount);
 
         // Проверяем, что все чтения выполнены
-        Assert.Equal(numReaders * numKeys, readCount);
+        Assert.Equal(5 * numKeys, readCount);
     }
 
     [Fact]
@@ -115,7 +125,12 @@ public class SimpleStoreConcurrencyTests
             var index = i;
             setTasks.Add(Task.Run(async () =>
             {
-                store.Set($"item-{index}", BitConverter.GetBytes(index));
+                store.Set($"item-{index}", new UserProfile
+                {
+                    Id = index,
+                    Username = $"user-{index}",
+                    CreatedAt = DateTime.UtcNow
+                });
                 await Task.Yield();
             }));
         }
@@ -152,15 +167,16 @@ public class SimpleStoreConcurrencyTests
         // Проверяем, что удаленные элементы действительно удалены
         for (var i = 0; i < numDeletes; i++)
         {
-            var value = store.Get($"item-{i}");
-            Assert.Null(value);
+            var profile = store.Get($"item-{i}");
+            Assert.Null(profile);
         }
 
         // Проверяем, что оставшиеся элементы на месте
         for (var i = numDeletes; i < numSets; i++)
         {
-            var value = store.Get($"item-{i}");
-            Assert.NotNull(value);
+            var profile = store.Get($"item-{i}");
+            Assert.NotNull(profile);
+            Assert.Equal(i, profile.Id);
         }
     }
 }

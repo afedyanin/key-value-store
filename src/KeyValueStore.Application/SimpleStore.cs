@@ -11,13 +11,19 @@ public sealed class SimpleStore : IKeyValueStore, IDisposable
     private long _getCount;
     private long _deleteCount;
 
-    public byte[]? Get(string key)
+    public UserProfile? Get(string key)
     {
         _lock.EnterReadLock();
         try
         {
             Interlocked.Increment(ref _getCount);
-            return _store.TryGetValue(key, out var item) ? item : null;
+            if (_store.TryGetValue(key, out var bytes))
+            {
+                using var stream = new MemoryStream(bytes);
+                return UserProfile.DeserializeFromBinary(stream);
+            }
+
+            return null;
         }
         finally
         {
@@ -25,13 +31,17 @@ public sealed class SimpleStore : IKeyValueStore, IDisposable
         }
     }
 
-    public void Set(string key, byte[] value)
+    public void Set(string key, UserProfile profile)
     {
+        using var stream = new MemoryStream();
+        profile.SerializeToBinary(stream);
+        var bytes = stream.ToArray();
+
         _lock.EnterWriteLock();
         try
         {
             Interlocked.Increment(ref _setCount);
-            _store[key] = value;
+            _store[key] = bytes;
         }
         finally
         {

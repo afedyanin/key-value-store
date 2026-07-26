@@ -2,9 +2,9 @@
 
 public interface IKeyValueStore
 {
-    public void Set(string key, byte[] value);
+    public void Set(string key, UserProfile profile);
 
-    public byte[]? Get(string key);
+    public UserProfile? Get(string key);
 
     public void Delete(string key);
 }

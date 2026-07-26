@@ -2,6 +2,7 @@ using System.Buffers;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using KeyValueStore.Application.Abstractions;
 
 namespace KeyValueStore.Application;
@@ -41,7 +42,7 @@ public sealed class TcpServer : IDisposable
             while (!token.IsCancellationRequested && _isRunning)
             {
                 var clientSocket = await _serverSocket.AcceptAsync(token).ConfigureAwait(false);
-                _ = ProcessClientAsync(clientSocket);
+                _ = ProcessClientAsync(clientSocket, cancellationToken);
             }
         }
         catch (OperationCanceledException)
@@ -74,7 +75,7 @@ public sealed class TcpServer : IDisposable
         }
     }
 
-    private async Task ProcessClientAsync(Socket clientSocket)
+    private async Task ProcessClientAsync(Socket clientSocket, CancellationToken cancellationToken = default)
     {
         var lineBuffer = new StringBuilder();
         var receiveBuffer = ArrayPool<byte>.Shared.Rent(4096);
@@ -88,7 +89,7 @@ public sealed class TcpServer : IDisposable
                 int bytesRead;
                 try
                 {
-                    bytesRead = await clientSocket.ReceiveAsync(receiveBuffer.AsMemory(), SocketFlags.None).ConfigureAwait(false);
+                    bytesRead = await clientSocket.ReceiveAsync(receiveBuffer.AsMemory(), SocketFlags.None, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -182,17 +183,26 @@ public sealed class TcpServer : IDisposable
     private byte[]? HandleSet(ParsedCommand parsed)
     {
         var key = parsed.Key.ToString();
-        var stringValue = $"{parsed.Value.ToString().TrimEnd('\r', '\n')}\r\n";
-        var value = Encoding.UTF8.GetBytes(stringValue);
-        _store.Set(key, value);
+        var valueSpan = parsed.Value.TrimEnd(['\r', '\n']);
+        var profile = JsonSerializer.Deserialize<UserProfile>(valueSpan);
+
+        if (profile == null)
+        {
+            return Encoding.UTF8.GetBytes("-ERR Failed to deserialize profile\r\n");
+        }
+
+        _store.Set(key, profile);
         return Encoding.UTF8.GetBytes("OK\r\n");
     }
 
     private byte[]? HandleGet(ParsedCommand parsed)
     {
         var key = parsed.Key.ToString();
-        var value = _store.Get(key);
-        return value is not null ? value : Encoding.UTF8.GetBytes("(nil)\r\n");
+        var profile = _store.Get(key);
+
+        return profile is not null
+            ? Encoding.UTF8.GetBytes(JsonSerializer.Serialize(profile) + "\r\n")
+            : Encoding.UTF8.GetBytes("(nil)\r\n");
     }
 
     private byte[]? HandleDelete(ParsedCommand parsed)

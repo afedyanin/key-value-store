@@ -1,5 +1,7 @@
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
+using UserProfile = KeyValueStore.Application.UserProfile;
 
 namespace KeyValueStore.Benchmarks;
 
@@ -27,6 +29,16 @@ public sealed class TcpBenchmarkClient : IDisposable
     public async Task<string> SetAsync(string key, string value)
     {
         var command = $"SET {key} {value}\n";
+        var bytes = Encoding.UTF8.GetBytes(command);
+        await _stream!.WriteAsync(bytes.AsMemory()).ConfigureAwait(false);
+        await _stream!.FlushAsync().ConfigureAwait(false);
+        return await ReadResponseAsync().ConfigureAwait(false);
+    }
+
+    public async Task<string> SetProfileAsync(string key, UserProfile profile)
+    {
+        var json = JsonSerializer.Serialize(profile);
+        var command = $"SET {key} {json}\n";
         var bytes = Encoding.UTF8.GetBytes(command);
         await _stream!.WriteAsync(bytes.AsMemory()).ConfigureAwait(false);
         await _stream!.FlushAsync().ConfigureAwait(false);
