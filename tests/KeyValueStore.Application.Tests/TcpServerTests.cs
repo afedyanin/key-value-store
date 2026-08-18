@@ -1,15 +1,19 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Diagnostics.Metrics;
 
 namespace KeyValueStore.Application.Tests;
 
 public class TcpServerTests
 {
+    private static readonly System.Diagnostics.ActivitySource TestActivitySource = new("TestServer");
+    private static readonly Meter TestMeter = new("TestServer");
+
     [Fact]
     public async Task StartAsync_And_StopAsync_DoesNotThrow()
     {
-        var server = new TcpServer(new SimpleStore());
+        var server = new TcpServer(new SimpleStore(), TestActivitySource, TestMeter);
         var port = GetRandomPort();
 
         var task = server.StartAsync(port);
@@ -29,7 +33,7 @@ public class TcpServerTests
     [Fact]
     public async Task Client_Can_Connect_And_Send_Data()
     {
-        var server = new TcpServer(new SimpleStore());
+        var server = new TcpServer(new SimpleStore(), TestActivitySource, TestMeter);
         var port = GetRandomPort();
 
         var task = server.StartAsync(port);
@@ -67,7 +71,7 @@ public class TcpServerTests
     [Fact]
     public async Task Set_And_Get_Profile_ReturnsCorrectData()
     {
-        var server = new TcpServer(new SimpleStore());
+        var server = new TcpServer(new SimpleStore(), TestActivitySource, TestMeter);
         var port = GetRandomPort();
 
         var task = server.StartAsync(port);
@@ -107,7 +111,7 @@ public class TcpServerTests
     [Fact]
     public async Task Client_Disconnect_Correctly_Handled()
     {
-        var server = new TcpServer(new SimpleStore());
+        var server = new TcpServer(new SimpleStore(), TestActivitySource, TestMeter);
         var port = GetRandomPort();
 
         var task = server.StartAsync(port);
@@ -133,7 +137,7 @@ public class TcpServerTests
     [Fact]
     public async Task Multiple_Clients_Can_Connect()
     {
-        var server = new TcpServer(new SimpleStore());
+        var server = new TcpServer(new SimpleStore(), TestActivitySource, TestMeter);
         var port = GetRandomPort();
 
         var task = server.StartAsync(port);
