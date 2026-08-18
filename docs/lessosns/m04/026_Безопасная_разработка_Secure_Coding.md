@@ -18,3 +18,22 @@
 ## Результаты
 
 - модифицированный код сетевого обработчика, включающий валидацию входных данных и ограничение ресурсов для защиты от DoS-атак.
+
+## Links
+
+https://learn.microsoft.com/en-us/dotnet/standard/security/secure-coding-guidelines
+
+https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/security-warnings
+
+https://cheatsheetseries.owasp.org/cheatsheets/DotNet_Security_Cheat_Sheet.html
+
+https://owasp.org/Top10/2025/
+
+https://owasp.org/www-project-smart-contract-top-10/
+
+https://docs.github.com/en/code-security/tutorials/secure-your-dependencies/dependabot-quickstart
+
+https://www.microsoft.com/en-us/securityengineering/sdl
+
+https://habr.com/ru/companies/jugru/articles/341792/
+
