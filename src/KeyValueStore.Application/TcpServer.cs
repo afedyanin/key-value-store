@@ -1,4 +1,6 @@
 using System.Buffers;
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -10,13 +12,23 @@ namespace KeyValueStore.Application;
 public sealed class TcpServer : IDisposable
 {
     private readonly IKeyValueStore _store;
+    private readonly ActivitySource _activitySource;
+    private readonly Counter<long> _commandCounter;
+    private readonly Histogram<double> _commandDurationHistogram;
+    private readonly int _maxMessageSize;
+    private readonly SemaphoreSlim _semaphore;
     private Socket? _serverSocket;
     private CancellationTokenSource? _cancellationTokenSource;
     private bool _isRunning;
 
-    public TcpServer(IKeyValueStore store)
+    public TcpServer(IKeyValueStore store, ActivitySource activitySource, Meter meter, int maxMessageSize = 4096, int maxConcurrentConnections = 100)
     {
         _store = store;
+        _activitySource = activitySource;
+        _commandCounter = meter.CreateCounter<long>("commands.total");
+        _commandDurationHistogram = meter.CreateHistogram<double>("commands.duration");
+        _maxMessageSize = maxMessageSize;
+        _semaphore = new SemaphoreSlim(maxConcurrentConnections, maxConcurrentConnections);
     }
 
     public async Task StartAsync(int port = 8080, CancellationToken cancellationToken = default)
@@ -77,6 +89,8 @@ public sealed class TcpServer : IDisposable
 
     private async Task ProcessClientAsync(Socket clientSocket, CancellationToken cancellationToken = default)
     {
+        await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
         var lineBuffer = new StringBuilder();
         var receiveBuffer = ArrayPool<byte>.Shared.Rent(4096);
 
@@ -127,7 +141,12 @@ public sealed class TcpServer : IDisposable
                         continue;
                     }
 
-                    //Console.WriteLine($"Line received: {line}");
+                    // Point 1: Check max message size
+                    if (line.Length > _maxMessageSize)
+                    {
+                        Console.WriteLine($"Message exceeded max size ({line.Length} > {_maxMessageSize}), disconnecting client");
+                        break;
+                    }
 
                     var parsed = CommandParser.Parse(line.AsSpan());
 
@@ -136,17 +155,33 @@ public sealed class TcpServer : IDisposable
                         continue;
                     }
 
-                    //Console.WriteLine($"  Command: {parsed.Command}");
-                    //Console.WriteLine($"  Key:     {parsed.Key}");
-                    //Console.WriteLine($"  Value:   {parsed.Value}");
+                    var commandName = parsed.Command.ToString();
+                    var key = parsed.Key.ToString();
 
-                    var response = parsed.Command switch
+                    // Point 4: Tracing
+                    using var activity = _activitySource.StartActivity($"Process {commandName}", ActivityKind.Server);
+
+                    if (activity is not null)
+                    {
+                        activity.SetTag("command.name", commandName);
+                        activity.SetTag("key", key);
+                    }
+
+                    var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+                    var response = commandName switch
                     {
                         "SET" => HandleSet(parsed),
                         "GET" => HandleGet(parsed),
                         "DELETE" => HandleDelete(parsed),
                         _ => Encoding.UTF8.GetBytes("-ERR Unknown command\r\n")
                     };
+
+                    stopwatch.Stop();
+
+                    // Point 5: Metrics
+                    _commandCounter.Add(1);
+                    _commandDurationHistogram.Record(stopwatch.Elapsed.TotalMilliseconds);
 
                     if (response != null)
                     {
@@ -216,5 +251,6 @@ public sealed class TcpServer : IDisposable
     {
         _serverSocket?.Dispose();
         _cancellationTokenSource?.Dispose();
+        _semaphore?.Dispose();
     }
 }
